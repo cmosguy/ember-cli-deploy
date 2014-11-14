@@ -63,6 +63,108 @@ describe('redis-index-adpater', function(){
     });
   });
 
+  describe('#upload', function() {
+    it('proceeds if index is uploaded and returns the key', function() {
+      function succeeded() {
+        return Promise.resolve('succeeded');
+      }
+
+      var subject = new Adapter({
+        connection: {},
+        _uploadIfNotInVersionList: succeeded,
+        _updateVersionList: succeeded,
+        _trimVersionList: succeeded
+      });
+
+      return subject.upload('data')
+        .then(function(key) {
+          assert.ok(/[0-9a-f]{10}/.test(key));
+        }, function(error) {
+          assert.ok(false, 'Should have resolved upload');
+        });
+    });
+
+    it('rejects if index is not uploaded', function() {
+      function notCalled() {
+        assert.ok(false);
+      }
+
+      function succeeded() {
+        return Promise.resolve('succeeded');
+      }
+
+      function failed() {
+        return Promise.reject('failed');
+      }
+
+      var subject = new Adapter({
+        connection: {},
+        _uploadIfNotInVersionList: failed,
+        _updateVersionList: succeeded,
+        _trimVersionList: notCalled
+      });
+
+      return subject.upload('data')
+        .then(function() {
+          assert.ok(false, 'Should have rejected upload');
+        }, function(error) {
+          assert.equal(error, 'failed');
+        });
+    });
+
+    it('rejects if version list is not updated', function() {
+      function notCalled() {
+        assert.ok(false);
+      }
+
+      function succeeded() {
+        return Promise.resolve('succeeded');
+      }
+
+      function failed() {
+        return Promise.reject('failed');
+      }
+
+      var subject = new Adapter({
+        connection: {},
+        _uploadIfNotInVersionList: succeeded,
+        _updateVersionList: failed,
+        _trimVersionList: notCalled
+      });
+
+      return subject.upload('data')
+        .then(function() {
+          assert.ok(false, 'Should have rejected upload');
+        }, function(error) {
+          assert.equal(error, 'failed');
+        });
+    });
+
+    it('rejects if version list is not trimmed', function() {
+      function succeeded() {
+        return Promise.resolve('succeeded');
+      }
+
+      function failed() {
+        return Promise.reject('failed');
+      }
+
+      var subject = new Adapter({
+        connection: {},
+        _uploadIfNotInVersionList: succeeded,
+        _updateVersionList: succeeded,
+        _trimVersionList: failed
+      });
+
+      return subject.upload('data')
+        .then(function() {
+          assert.ok(false, 'Should have rejected upload');
+        }, function(error) {
+          assert.equal(error, 'failed');
+        });
+    });
+  });
+
   describe('#_key', function() {
     it('returns the current git hash', function() {
       var subject = new Adapter({
