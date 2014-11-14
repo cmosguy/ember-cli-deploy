@@ -54,6 +54,18 @@ describe('redis-index-adpater', function(){
     });
   });
 
+  describe('#_key', function() {
+    it('returns the current git hash', function() {
+      var subject = new Adapter({
+        connection: {}
+      });
+
+      var sha = subject._key();
+
+      assert.ok(/[0-9a-f]{10}/.test(sha), 'Should return hash');
+    });
+  });
+
   describe('#_upload', function() {
     it('resolves on a successful upload', function() {
       var client = {
@@ -68,9 +80,9 @@ describe('redis-index-adpater', function(){
         client: client
       });
 
-      return subject._upload('key', 'value')
+      return subject._upload('appId', 'key', 'value')
         .then(function() {
-          assert.equal(client.key, 'key');
+          assert.equal(client.key, 'appId:key');
           assert.equal(client.value, 'value');
         }, function() {
           assert.ok(false, 'Should have uploaded successfully');
@@ -105,9 +117,10 @@ describe('redis-index-adpater', function(){
   describe('#_trimVersions', function() {
     it('resolves on a successful call', function() {
       var client = {
-        ltrim: function(appId, versionCount) {
+        ltrim: function(appId, min, max) {
           this.appId = appId;
-          this.versionCount = versionCount;
+          this.min = min;
+          this.max = max;
           return Promise.resolve();
         }
       };
@@ -119,7 +132,8 @@ describe('redis-index-adpater', function(){
       return subject._trimVersionList('appId', 5)
         .then(function() {
           assert.equal(client.appId, 'appId');
-          assert.equal(client.versionCount, 5);
+          assert.equal(client.min, 0);
+          assert.equal(client.max, 4);
         }, function() {
           assert.ok(false, 'Should have trimmed the version list successfully');
         });
