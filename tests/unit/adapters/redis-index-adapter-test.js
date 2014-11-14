@@ -89,9 +89,9 @@ describe('redis-index-adpater', function(){
         client: client
       });
 
-      return subject._upload('appId', 'key', 'value')
+      return subject._upload('key', 'value')
         .then(function() {
-          assert.equal(client.key, 'appId:key');
+          assert.equal(client.key, 'default:key');
           assert.equal(client.value, 'value');
         }, function() {
           assert.ok(false, 'Should have uploaded successfully');
@@ -113,9 +113,9 @@ describe('redis-index-adpater', function(){
         client: client
       });
 
-      return subject._updateVersionList('appId', 'key')
+      return subject._updateVersionList('key')
         .then(function() {
-          assert.equal(client.appId, 'appId');
+          assert.equal(client.appId, 'default');
           assert.equal(client.key, 'key');
         }, function() {
           assert.ok(false, 'Should have updatedVersions successfully');
@@ -135,12 +135,13 @@ describe('redis-index-adpater', function(){
       };
       var subject = new Adapter({
         connection: {},
-        client: client
+        client: client,
+        versionCount: 5
       });
 
-      return subject._trimVersionList('appId', 5)
+      return subject._trimVersionList()
         .then(function() {
-          assert.equal(client.appId, 'appId');
+          assert.equal(client.appId, 'default');
           assert.equal(client.min, 0);
           assert.equal(client.max, 4);
         }, function() {
@@ -167,7 +168,7 @@ describe('redis-index-adpater', function(){
         client: client
       });
 
-      return subject._listVersions('appId', 3)
+      return subject._listVersions(3)
         .then(function(result) {
           assert.equal(result.length, 3);
         }, function() {
@@ -193,7 +194,7 @@ describe('redis-index-adpater', function(){
         versionCount: 4
       });
 
-      return subject._listVersions('appId')
+      return subject._listVersions()
         .then(function(result) {
           assert.equal(result.length, 4);
         }, function() {
