@@ -140,6 +140,41 @@ describe('redis-index-adpater', function(){
           this.appId = appId;
           this.key = key;
           return Promise.resolve();
+        },
+        lrange: function(appId, start, end) {
+          this.appId = appId;
+          this.start = start;
+          this.end = end;
+
+          var result = ['key', 'a', 'b', 'c', 'd'].slice(start, end + 1);
+
+          return Promise.resolve(result);
+        }
+      };
+      var subject = new Adapter({
+        connection: {},
+        client: client
+      });
+
+      return subject._updateVersionList('new-key')
+        .then(function() {
+          assert.equal(client.appId, 'default');
+          assert.equal(client.key, 'new-key');
+        }, function() {
+          assert.ok(false, 'Should have updated versions successfully');
+        });
+    });
+
+    it('rejects if a version already exists for the current git sha', function() {
+      var client = {
+        lrange: function(appId, start, end) {
+          this.appId = appId;
+          this.start = start;
+          this.end = end;
+
+          var result = ['key', 'a', 'b', 'c', 'd'].slice(start, end + 1);
+
+          return Promise.resolve(result);
         }
       };
       var subject = new Adapter({
@@ -149,10 +184,9 @@ describe('redis-index-adpater', function(){
 
       return subject._updateVersionList('key')
         .then(function() {
-          assert.equal(client.appId, 'default');
-          assert.equal(client.key, 'key');
-        }, function() {
-          assert.ok(false, 'Should have updatedVersions successfully');
+          assert.ok(false, 'Should have rejected due to version already being in version list');
+        }, function(error) {
+          assert.equal(error.message, 'Version for key [key] has already been uploaded\n');
         });
     });
   });
