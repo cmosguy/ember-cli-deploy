@@ -75,9 +75,18 @@ describe('redis-index-adpater', function(){
     });
   });
 
-  describe('#_upload', function() {
+  describe('#_uploadIfNotInVersionList', function() {
     it('resolves on a successful upload', function() {
       var client = {
+        lrange: function(appId, start, end) {
+          this.appId = appId;
+          this.start = start;
+          this.end = end;
+
+          var result = ['key', 'a', 'b', 'c', 'd'].slice(start, end + 1);
+
+          return Promise.resolve(result);
+        },
         set: function(key, value) {
           this.key = key;
           this.value = value;
@@ -89,12 +98,37 @@ describe('redis-index-adpater', function(){
         client: client
       });
 
-      return subject._upload('key', 'value')
+      return subject._uploadIfNotInVersionList('new-key', 'value')
         .then(function() {
-          assert.equal(client.key, 'default:key');
+          assert.equal(client.key, 'default:new-key');
           assert.equal(client.value, 'value');
         }, function() {
           assert.ok(false, 'Should have uploaded successfully');
+        });
+    });
+
+    it('rejects if a version already exists for the current git sha', function() {
+      var client = {
+        lrange: function(appId, start, end) {
+          this.appId = appId;
+          this.start = start;
+          this.end = end;
+
+          var result = ['key', 'a', 'b', 'c', 'd'].slice(start, end + 1);
+
+          return Promise.resolve(result);
+        }
+      };
+      var subject = new Adapter({
+        connection: {},
+        client: client
+      });
+
+      return subject._uploadIfNotInVersionList('key', 'value')
+        .then(function() {
+          assert.ok(false, 'Should have rejected due to version already being uploaded');
+        }, function(error) {
+          assert.equal(error.message, 'Version for key [key] has already been uploaded\n');
         });
     });
   });
@@ -158,7 +192,7 @@ describe('redis-index-adpater', function(){
           this.start = start;
           this.end = end;
 
-          var result = [1, 2, 3, 4, 5].slice(start, end + 1);
+          var result = ['key', 'a', 'b', 'c', 'd'].slice(start, end + 1);
 
           return Promise.resolve(result);
         }
@@ -183,7 +217,7 @@ describe('redis-index-adpater', function(){
           this.start = start;
           this.end = end;
 
-          var result = [1, 2, 3, 4, 5].slice(start, end + 1);
+          var result = ['key', 'a', 'b', 'c', 'd'].slice(start, end + 1);
 
           return Promise.resolve(result);
         }
