@@ -10,7 +10,7 @@ describe('redis-index-adpater', function(){
       try {
         new Adapter();
       } catch(e) {
-        assert.equal(e.message, 'Adapter must define a `connection` property');
+        assert.equal(e.message, 'Adapter must define a `connection` property\n');
 
         return;
       }
@@ -45,7 +45,16 @@ describe('redis-index-adpater', function(){
       assert.equal(subject.client, client);
     });
 
-    it('sets the maximum version count', function() {
+    it('sets the maximum version count if supplied', function() {
+      var subject = new Adapter({
+        connection: {},
+        versionCount: 4
+      });
+
+      assert.equal(subject.versionCount, 4);
+    });
+
+    it('sets the default maximum version count if not supplied', function() {
       var subject = new Adapter({
         connection: {}
       });
@@ -136,6 +145,59 @@ describe('redis-index-adpater', function(){
           assert.equal(client.max, 4);
         }, function() {
           assert.ok(false, 'Should have trimmed the version list successfully');
+        });
+    });
+  });
+
+  describe('#_listVersions', function() {
+    it('returns the number of versions specified', function() {
+      var client = {
+        lrange: function(appId, start, end) {
+          this.appId = appId;
+          this.start = start;
+          this.end = end;
+
+          var result = [1, 2, 3, 4, 5].slice(start, end + 1);
+
+          return Promise.resolve(result);
+        }
+      };
+      var subject = new Adapter({
+        connection: {},
+        client: client
+      });
+
+      return subject._listVersions('appId', 3)
+        .then(function(result) {
+          assert.equal(result.length, 3);
+        }, function() {
+          assert.ok(false, 'Should have returned specified number of versions');
+        });
+    });
+
+    it('returns the default number of versions when count not specified', function() {
+      var client = {
+        lrange: function(appId, start, end) {
+          this.appId = appId;
+          this.start = start;
+          this.end = end;
+
+          var result = [1, 2, 3, 4, 5].slice(start, end + 1);
+
+          return Promise.resolve(result);
+        }
+      };
+      var subject = new Adapter({
+        connection: {},
+        client: client,
+        versionCount: 4
+      });
+
+      return subject._listVersions('appId')
+        .then(function(result) {
+          assert.equal(result.length, 4);
+        }, function() {
+          assert.ok(false, 'Should have returned specified number of versions');
         });
     });
   });
