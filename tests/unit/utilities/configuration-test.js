@@ -40,23 +40,5 @@ describe('utilities/configuration', function() {
       assert.ok(subject.hasOwnProperty('index'), 'Config missing property');
       assert.ok(subject.hasOwnProperty('assets'), 'Config missing property');
     });
-
-    it('sets the default distDir if it\'s not specified', function() {
-      var subject = new Config({
-        project: { root: process.cwd() + '/tests/fixtures' },
-        environment: 'production'
-      });
-
-      assert.equal(subject.distDir, 'dist');
-    });
-
-    it('uses the distDir specified', function() {
-      var subject = new Config({
-        project: { root: process.cwd() + '/tests/fixtures' },
-        environment: 'development'
-      });
-
-      assert.equal(subject.distDir, 'tests/fixtures/dist');
-    });
   });
 });
