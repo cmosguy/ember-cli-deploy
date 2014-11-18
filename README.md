@@ -105,11 +105,27 @@ module.exports = EmberCLIDeployRedisIndexAdapter;
 The purpose of the `index-adapter` is to upload the `index.html` to an in-memory store.  An example of such an adapter is as follows:
 
 ```javascript
-function Adapter() {}
+function Adapter(options) {
+  this.appId: options.appId;
+  this.connection: options.connection
+}
 
 Adapter.prototype.upload = function(data) {/* some logic to upload index.html*/};
 
 Adapter.type = 'index-adapter';
+```
+
+#### constructor
+
+When constructing an instance of an `index-adatper`, [ember-cli-deploy][9] will initialise it with an `appId` and the `connection` details for the in-memory store, as specified in the `index` property of the current [configuration][16]. An example of this is as follows:
+
+```javascript
+// lib/tasks/deploy-index.js
+
+var adapter = new IndexAdapter({
+  appId: this.project.name(),
+  connection: config.index
+});
 ```
 
 #### Adapter.type (required)
@@ -188,3 +204,4 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 [13]: https://github.com/achambers/ember-cli-deploy/releases/tag/v0.0.4 "Release v0.0.4"
 [14]: http://www.ember-cli.com/#create-addon "Ember CLI addons"
 [15]: https://github.com/achambers/ember-cli-deploy-redis-index-adapter "ember-cli-deploy-redis-index-adapter"
+[16]: https://github.com/achambers/ember-cli-deploy#configuration "ember-cli-deploy configuration"
