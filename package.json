@@ -27,7 +27,8 @@
     "mime": "^1.2.11",
     "redis": "^0.12.1",
     "rsvp": "^3.0.13",
-    "then-redis": "^0.3.12"
+    "then-redis": "^0.3.12",
+    "ember-cli-deploy-redis-index-adapter": "^0.0.1"
   },
   "devDependencies": {
     "chai": "^1.9.1",

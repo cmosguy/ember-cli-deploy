@@ -1,6 +1,7 @@
 'use strict';
 
 var assert          = require('ember-cli/tests/helpers/assert');
+var MockUI          = require('ember-cli/tests/helpers/mock-ui');
 var AdapterRegistry = require('../../../lib/utilities/adapter-registry');
 
 describe('utilities/adapter-registry', function() {
@@ -13,7 +14,8 @@ describe('utilities/adapter-registry', function() {
     };
 
     var subject = new AdapterRegistry({
-      project: project
+      project: project,
+      ui: new MockUI()
     });
 
     var adapter = subject.indexAdapter();
@@ -21,22 +23,21 @@ describe('utilities/adapter-registry', function() {
     assert.equal(adapter.name, 'a');
   });
 
-  it('throws an error if no index adapters are registered', function() {
+  it('uses default index adapter if none are registered', function() {
     var project = {
       addons: []
     };
 
+    var mockUI = new MockUI();
+
     var subject = new AdapterRegistry({
-      project: project
+      project: project,
+      ui: mockUI
     });
 
-    try {
-      subject.indexAdapter();
-    } catch(e) {
-      assert.equal(e.message, 'No index adapters registered\n');
-      return;
-    }
+    var result = subject.indexAdapter();
 
-    assert.ok(false);
+    assert.include(mockUI.output, 'No index adapter specified.  Defaulting to `redis-index-adapter`');
+    assert.equal(result.type, 'index-adapter');
   });
 });
