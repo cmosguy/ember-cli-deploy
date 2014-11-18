@@ -5,6 +5,7 @@ var Promise     = require('ember-cli/lib/ext/promise');
 var MockProject = require('ember-cli/tests/helpers/mock-project');
 var MockUI      = require('ember-cli/tests/helpers/mock-ui');
 var MockAdapter = require('../../helpers/mock-adapter');
+var MockRegistry = require('../../helpers/mock-registry');
 
 describe('tasks/deploy-index', function() {
   var DeployIndexTask;
@@ -33,9 +34,6 @@ describe('tasks/deploy-index', function() {
 
     var mockProject = new MockProject();
     mockProject.root = process.cwd() + '/tests/fixtures';
-    mockProject.addons = [
-      {adapter: MockAdapter }
-    ];
 
     mockUI = new MockUI();
 
@@ -52,6 +50,7 @@ describe('tasks/deploy-index', function() {
 
   it('rejects if index.html cannot be found', function() {
     options._indexFile = rejected;
+    options.registry = new MockRegistry();
 
     subject = new DeployIndexTask(options);
 
@@ -65,6 +64,7 @@ describe('tasks/deploy-index', function() {
 
   it('rejects if upload fails', function() {
     MockAdapter.prototype.upload = rejected;
+    options.registry = new MockRegistry();
 
     subject = new DeployIndexTask(options);
 
@@ -77,6 +77,7 @@ describe('tasks/deploy-index', function() {
   });
 
   it('resolves if uploaded succeeds', function() {
+    options.registry = new MockRegistry();
     subject = new DeployIndexTask(options);
 
     return subject.run({environment: 'development'})
