@@ -23,12 +23,10 @@
     "aws-sdk": "^2.0.17",
     "chalk": "^0.5.1",
     "core-object": "0.0.2",
-    "gitty": "^3.1.1",
+    "ember-cli-deploy-redis-index-adapter": "git://github.com/achambers/ember-cli-deploy-redis-index-adapter#add-adapter",
     "mime": "^1.2.11",
     "redis": "^0.12.1",
-    "rsvp": "^3.0.13",
-    "then-redis": "^0.3.12",
-    "ember-cli-deploy-redis-index-adapter": "^0.0.1"
+    "rsvp": "^3.0.13"
   },
   "devDependencies": {
     "chai": "^1.9.1",
