@@ -4,12 +4,13 @@ var assert      = require('ember-cli/tests/helpers/assert');
 var Promise     = require('ember-cli/lib/ext/promise');
 var MockProject = require('ember-cli/tests/helpers/mock-project');
 var MockUI      = require('ember-cli/tests/helpers/mock-ui');
+var MockAdapter = require('../../helpers/mock-adapter');
 
 describe('tasks/deploy-index', function() {
   var DeployIndexTask;
   var subject;
   var options;
-  var rejected, resolved, failedUpload, succeededUpload;
+  var rejected, resolved;
   var mockUI;
 
   before(function() {
@@ -25,24 +26,23 @@ describe('tasks/deploy-index', function() {
 
       return Promise.resolve();
     };
-
-    failedUpload = {upload: rejected};
-    succeededUpload = {upload: resolved.bind(this, 'aaa')};
   });
 
   beforeEach(function() {
+    MockAdapter.prototype.upload = resolved.bind(this, 'aaa');
+
     var mockProject = new MockProject();
     mockProject.root = process.cwd() + '/tests/fixtures';
+    mockProject.addons = [
+      {adapter: MockAdapter }
+    ];
 
     mockUI = new MockUI();
 
     options = {
       project: mockProject,
       ui: mockUI,
-      _indexFile: resolved,
-      adapters: {
-        Redis: function() { return succeededUpload }
-      }
+      _indexFile: resolved
     };
   });
 
@@ -64,7 +64,7 @@ describe('tasks/deploy-index', function() {
   });
 
   it('rejects if upload fails', function() {
-    options.adapters.Redis = function() { return failedUpload };
+    MockAdapter.prototype.upload = rejected;
 
     subject = new DeployIndexTask(options);
 
